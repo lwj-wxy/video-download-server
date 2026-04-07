@@ -1,8 +1,6 @@
 # Video Download Server
 
-This directory is the standalone backend package for the video download project and is intended to become the root of:
-
-- `https://github.com/lwj-wxy/video-download-server`
+This repository is the standalone backend package for the video download project.
 
 ## Included
 
@@ -57,11 +55,14 @@ Default local frontend origins:
 
 ## Migration status
 
-This folder is normalized so it can be copied into the standalone backend repository root with minimal changes.
+This repository was initialized from the prepared backend extraction package.
 
 See:
 
-- [MIGRATION_READY.md](C:\Users\StandardSoftware\Desktop\my-project\video-download\backend\MIGRATION_READY.md)
+- `MIGRATION_READY.md`
+- `FIRST_COMMIT_CHECKLIST.md`
+- `REPOSITORY_MAPPING.md`
+- `TARGET_FILE_TREE.md`
 
 ## Cookies for TikTok and Douyin
 
@@ -120,4 +121,4 @@ Useful PM2 commands:
 1. Replace mock parse logic with a real parser adapter
 2. Add a BullMQ worker to process download jobs and update task progress
 3. Upload completed files to storage and write `DownloadFile`
-4. Point the Next.js frontend to this service through environment-based API URLs
+4. Point the frontend to this service through environment-based API URLs

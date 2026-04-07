@@ -5,3 +5,18 @@ storage/
 *.log
 prisma/dev.db
 prisma/dev.db-journal
+
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+
+# Other files and folders
+.settings/
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
