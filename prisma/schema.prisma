@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ParseStatus {
+  success
+  failed
+}
+
+enum TaskStatus {
+  pending
+  queued
+  processing
+  completed
+  failed
+  expired
+}
+
+enum PlanCode {
+  free
+  plus
+  pro
+}
+
+enum StorageProvider {
+  s3
+  local
+}
+
+model VideoParseRecord {
+  id              String      @id @default(uuid()) @db.Uuid
+  sourceUrl       String      @map("source_url")
+  platform        String?     @db.VarChar(64)
+  parseStatus     ParseStatus @map("parse_status")
+  title           String?
+  durationSeconds Int?        @map("duration_seconds")
+  errorCode       String?     @map("error_code") @db.VarChar(64)
+  errorMessage    String?     @map("error_message")
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([platform])
+  @@index([parseStatus])
+  @@map("video_parse_records")
+}
+
+model DownloadTask {
+  id                  String       @id @default(uuid()) @db.Uuid
+  visitorId           String?      @map("visitor_id") @db.VarChar(128)
+  sourceUrl           String       @map("source_url")
+  platform            String?      @db.VarChar(64)
+  title               String?
+  requestedFormat     String       @map("requested_format") @db.VarChar(32)
+  requestedResolution String?      @map("requested_resolution") @db.VarChar(32)
+  audioOnly           Boolean      @default(false) @map("audio_only")
+  planCode            PlanCode     @map("plan_code")
+  status              TaskStatus   @default(pending)
+  progress            Int          @default(0)
+  queueJobId          String?      @map("queue_job_id") @db.VarChar(128)
+  errorCode           String?      @map("error_code") @db.VarChar(64)
+  errorMessage        String?      @map("error_message")
+  startedAt           DateTime?    @map("started_at") @db.Timestamptz(6)
+  completedAt         DateTime?    @map("completed_at") @db.Timestamptz(6)
+  expiresAt           DateTime?    @map("expires_at") @db.Timestamptz(6)
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  file                DownloadFile?
+
+  @@index([visitorId, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("download_tasks")
+}
+
+model DownloadFile {
+  id                 String          @id @default(uuid()) @db.Uuid
+  taskId             String          @unique @map("task_id") @db.Uuid
+  storageProvider    StorageProvider @map("storage_provider")
+  fileName           String          @map("file_name")
+  fileSize           BigInt?         @map("file_size")
+  mimeType           String?         @map("mime_type") @db.VarChar(128)
+  publicUrl          String?         @map("public_url")
+  signedUrlExpiresAt DateTime?       @map("signed_url_expires_at") @db.Timestamptz(6)
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  task               DownloadTask    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("download_files")
+}
+
+model UsageCounter {
+  id          String   @id @default(uuid()) @db.Uuid
+  visitorId   String   @map("visitor_id") @db.VarChar(128)
+  metricKey   String   @map("metric_key") @db.VarChar(64)
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd   DateTime @map("period_end") @db.Date
+  value       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([visitorId, metricKey, periodStart, periodEnd])
+  @@map("usage_counters")
+}
